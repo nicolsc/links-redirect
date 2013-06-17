@@ -3,11 +3,11 @@ $(document).ready(function(){
       var params = {};
       $('#new-link input[type=text]').each(function(idx, item){
         if (item.value!=="" && item.value!="null"){
-          params[item.id] = item.value;
+          params[item._id] = item.value;
         }
       });
       if ($('#new-link #id').val()){
-        params.id = $('#new-link #id').val();
+        params._id = $('#new-link #id').val();
         return editlink(params);
       }
       else{
@@ -70,7 +70,7 @@ $(document).ready(function(){
   }
   function newlink(params){
   $.ajax({type:'POST', url:'/links', data:params, dataType:'json', success:function(result){
-      success('Success - link id : '+result.id);
+      success('Success - link id : '+result._id);
       refresh();
     }, error:function(err){
       error(err.msg);
@@ -87,8 +87,8 @@ function deletelink(id){
   });
 }
 function editlink(params){
-  $.ajax({type:'PUT', url:'/links/'+params.id, data:params,dataType:'json', success:function(result){
-    success('Edit link '+result.id);
+  $.ajax({type:'PUT', url:'/links/'+params._id, data:params,dataType:'json', success:function(result){
+    success('Edit link '+result._id);
     refresh();
   }});
 }

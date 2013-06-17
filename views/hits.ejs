@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Stats - hits</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <h1>Hits</h1>
+     <% if (hits && hits.length){%>
+    <table id="hits">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Entry</th>
+          <th>Date</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+      <% hits.forEach(function(hit, idx){%>
+        <tr class='hit'>
+          <td><%=idx+1%>.</td>
+          <td><%=hit.entry%></td>
+          <td><%=hit.date ? hit.date.toLocaleString() : ''%></td>
+          <td><%=hit.status%></td>
+          <td><%=hit.ip || ''%></td>
+        </tr>
+
+    <%}); %>
+       
+      </tbody>
+    </table>
+    <% }
+  else{%>
+    <h3>Nothing yet</h3>
+  <%}%>
+  </body>
+</html>

@@ -5,7 +5,7 @@ var express = require('express'),
 
 
 /* mongo init */
-var db = new mongodb.Db('links',new mongodb.Server(), {w:-1});
+var db = new mongodb.Db('links',new mongodb.Server('localhost', 27017), {w:-1});
 
 db.open(function(err, linksDb) {
 	app.use(express.bodyParser());

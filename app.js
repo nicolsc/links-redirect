@@ -1,14 +1,28 @@
 var express = require('express'),
 	mongodb = require('mongodb'),
+	bcrypt = require('bcrypt'),
 	app = express(),
 	port = process.env.PORT || 17009;
 
+
+var checkAdmin = function(req, res, next){
+  if (!req.session || !req.session.user){
+    return res.redirect('/admin');
+  }
+  next();
+};
 
 /* mongo init */
 var db = new mongodb.Db('links',new mongodb.Server('localhost', 27017), {w:-1});
 
 db.open(function(err, linksDb) {
 	app.use(express.bodyParser());
+	app.use(express.cookieParser());
+	app.use(express.session({
+		secret: 'this is a secret',
+        cookie: {maxAge: 3600000 ,  secure: false, httpOnly:false }
+       })
+    );
 	app.use(express.favicon());
 	app.use(express.static('public'));
 	app.engine('html', require('ejs').renderFile);
@@ -18,7 +32,41 @@ db.open(function(err, linksDb) {
 	});
 
 	/** admin area **/
-	app.get('/admin/hits', function(req, res){
+	app.get('/admin', function(req, res){
+		if (req.session && req.session.user){
+			return res.redirect('/admin/links');
+		}
+		res.render('login.ejs');
+	});
+	app.post('/admin/login', function(req, res){
+      if (!req.body || !req.body.name || !req.body.password){
+        return res.status(400).json({msg:'Missing parameters'});
+      }
+      db.collection('users', function(errCollection, collection){
+		if (errCollection){
+			return res.status(500).json({msg:errCollection});
+		}
+		collection.find({name:req.body.name}).toArray(function(errFind, entries){
+			if (errFind){
+				return res.status(500).json({msg:errCollection});
+			}
+			if (!entries || !entries.length){
+				return res.status(403).json({msg:'Unable to log in'});
+			}
+			bcrypt.compare(req.body.password, entries[0].password, function(errCheck, resCheck) {
+				if (errCheck){
+					return res.status(500).json({msg:errCheck});
+				}
+				if (!resCheck){
+					return res.status(403).json({msg:'Unable to log in'});
+				}
+				req.session.user = entries[0];
+				return res.json(entries[0]);
+			});
+		});
+      });
+    });
+	app.get('/admin/hits', checkAdmin, function(req, res){
 		db.collection('hits', function(errCollection, collection){
 			if (errCollection){
 				return res.send(500);
@@ -28,7 +76,7 @@ db.open(function(err, linksDb) {
 			});
 		});
 	});
-	app.get('/admin/links', function(req, res){
+	app.get('/admin/links', checkAdmin, function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
 				return res.send(500);
@@ -38,7 +86,7 @@ db.open(function(err, linksDb) {
 			});
 		});
 	});
-	app.get('/links', function(req, res){
+	app.get('/links', checkAdmin, function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
 				return res.send(500);
@@ -48,7 +96,7 @@ db.open(function(err, linksDb) {
 			});
 		});
 	});
-	app.post('/links', function(req, res){
+	app.post('/links', checkAdmin, function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
 				return res.send(500);
@@ -61,7 +109,7 @@ db.open(function(err, linksDb) {
 			});
 		});
 	});
-	app.delete('/links/:id', function(req, res){
+	app.delete('/links/:id', checkAdmin,  function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
 				return res.send(500);

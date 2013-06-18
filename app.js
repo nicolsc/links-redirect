@@ -101,14 +101,14 @@ require('mongodb').MongoClient.connect(mongodb_conf.URI, function(err, db){
 				return res.send(500);
 			}
 			collection.find().toArray(function(errFind, entries){
-				res.json({links:entries});
+				res.json(entries);
 			});
 		});
 	});
 	app.post('/links', checkAdmin, function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
-				return res.send(500);
+				return res.status(500).send({msg:errCollection});
 			}
 			collection.insert(req.body, function(errInsert, result){
 				if (errInsert){
@@ -118,14 +118,32 @@ require('mongodb').MongoClient.connect(mongodb_conf.URI, function(err, db){
 			});
 		});
 	});
+	app.put('/links/:id', checkAdmin, function(req, res){
+		db.collection('links', function(errCollection, collection){
+			if (errCollection){
+				return res.status(500).send({msg:errCollection});
+			}
+			var params = {_id:mongodb.ObjectID(req.params.id)};
+			delete req.body._id;
+			collection.update(params, req.body, function(errUpdate, result){
+				if (errUpdate){
+					return res.status(500).send({msg:errUpdate});
+				}
+				return res.json({msg:'Updated '+result});
+			});
+		});
+	});
 	app.delete('/links/:id', checkAdmin,  function(req, res){
 		db.collection('links', function(errCollection, collection){
 			if (errCollection){
-				return res.send(500);
+				return res.status(500).send({msg:errCollection});
 			}
-			collection.remove({id:req.params.id}, function(errDelete, result){
-				console.log('hey', errDelete, result);
-				res.send('ok');
+			var params = {_id:mongodb.ObjectID(req.params.id)};
+			collection.remove(params,  function(errDelete, result){
+				if (errDelete){
+					return res.status(500).send({msg:errDelete});
+				}
+				return res.json({msg:'Deleted '+result});
 			});
 		});
 	});

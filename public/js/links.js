@@ -66,7 +66,7 @@ $(document).ready(function(){
     if (!link){
       return "";
     }
-   return "<tr class='link'><td>"+link.team+"</td><td class='number'>"+link.number+"</td><td class='lastname'>"+link.lastname+"</td><td class='firstname'>"+link.firstname+"</td><td class='position'>"+link.position+"</td><td class='club'>"+link.club+"</td><td class='image'>"+(link.image ? "<img src='"+link.image.contentURL+"' />" :'')+"</td><td class='buttons'><button class='btn-del' data-id='"+link.id+"'>Delete</button>&nbsp;<button class='btn-edit' data-id='"+link.id+"'>Edit</button></td></tr>";
+   return "<tr class='link'><td class='code'>"+link.code+"</td><td class='url'>"+link.url+"</td><td class='buttons'><button class='btn-del' data-id='"+link._id+"'>Delete</button>&nbsp;<button class='btn-edit' data-id='"+link._id+"'>Edit</button></td></tr>";
   }
   function newlink(params){
   $.ajax({type:'POST', url:'/links', data:params, dataType:'json', success:function(result){

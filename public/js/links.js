@@ -3,7 +3,7 @@ $(document).ready(function(){
       var params = {};
       $('#new-link input[type=text]').each(function(idx, item){
         if (item.value!=="" && item.value!="null"){
-          params[item._id] = item.value;
+          params[item.id] = item.value;
         }
       });
       if ($('#new-link #id').val()){
@@ -23,6 +23,7 @@ $(document).ready(function(){
       //feed 'new' form with this link info
       var $newlink = $('#new-link');
       var $current = $(evt.currentTarget.parentNode.parentNode);
+
       
       $('#id', $newlink).val($(evt.currentTarget).attr('data-id'));
       $('#code', $newlink).val($('.code',$current).text());
@@ -70,7 +71,7 @@ $(document).ready(function(){
   }
   function newlink(params){
   $.ajax({type:'POST', url:'/links', data:params, dataType:'json', success:function(result){
-      success('Success - link id : '+result._id);
+      success('Success - link id : '+result[0]._id);
       refresh();
     }, error:function(err){
       error(err.msg);
@@ -88,7 +89,7 @@ function deletelink(id){
 }
 function editlink(params){
   $.ajax({type:'PUT', url:'/links/'+params._id, data:params,dataType:'json', success:function(result){
-    success('Edit link '+result._id);
+    success('Edit successful - '+result.msg);
     refresh();
   }});
 }

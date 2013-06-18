@@ -3,12 +3,10 @@ var express = require('express'),
 	bcrypt = require('bcrypt'),
 	app = express(),
 	port = process.env.PORT || 17009,
-	tmp_conf =  (process.env.MONGOHQ_URL || 'mongodb://localhost:27017/links').replace(/^mongodb:\/\//gi, '').split('/'),
-	mongodb_conf={};
+	mongodb_conf = require('./mongoConfig').getConfig();
 
-mongodb_conf.DB_NAME = tmp_conf[1];
-mongodb_conf.HOST = tmp_conf[0].split(':')[0];
-mongodb_conf.PORT = tmp_conf[0].split(':')[1];
+
+
 
 
 /* if we have a router (like on heroku) or nginx between the client and node, the port on which we access
@@ -25,9 +23,8 @@ var checkAdmin = function(req, res, next){
 console.log('process.env', process.env);
 console.log('mongodb conf', mongodb_conf);
 /* mongo init */
-var db = new mongodb.Db(mongodb_conf.DB_NAME,new mongodb.Server(mongodb_conf.HOST, mongodb_conf.PORT), {w:-1});
+require('mongodb').MongoClient.connect(mongodb_conf.URI, function(err, db){
 
-db.open(function(err, linksDb) {
 	app.use(express.bodyParser());
 	app.use(express.cookieParser());
 	app.use(express.session({
@@ -169,5 +166,3 @@ db.open(function(err, linksDb) {
 	app.listen(port);
 
 });
-
-

@@ -2,25 +2,32 @@ var mongodb = require('mongodb');
 var bcrypt = require('bcrypt');
 var util = require('util');
 
+var mongodb_conf = require('./mongoConfig').getConfig();
+
 var credentials = {
 	salt:bcrypt.genSaltSync(10)
 };
 
 
-/* Ask for username */
-process.stdout.write('=== Set up a new user. ====\n');
-process.stdout.write('Username : ');
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
-process.stdin.once('data', function (data) {
-	credentials.name = data.toString().trim();
-	process.stdout.write('Password (will be hashed): ');
-	process.stdin.once('data', function (data){
-		credentials.password = bcrypt.hashSync(data.toString().trim(),credentials.salt);
-		
-
-		var db = new mongodb.Db('links',new mongodb.Server('localhost', 27017), {w:-1});
-		db.open(function(err, linksDb) {
+var db =  require('mongodb').MongoClient.connect(mongodb_conf.URI, function(err, db){
+	if (err){
+		console.log('=== Unable to connect to DB ===');
+		console.log('=== ', mongodb_conf);
+		console.log('===                         ===');
+		console.log('===', err);
+		console.log('===============================');
+		process.exit(0);
+	}
+	/* Ask for username */
+	process.stdout.write('=== Set up a new user. ====\n');
+	process.stdout.write('Username : ');
+	process.stdin.resume();
+	process.stdin.setEncoding('utf8');
+	process.stdin.once('data', function (data) {
+		credentials.name = data.toString().trim();
+		process.stdout.write('Password (will be hashed): ');
+		process.stdin.once('data', function (data){
+			credentials.password = bcrypt.hashSync(data.toString().trim(),credentials.salt);
 			db.collection('users', function(err, collection){
 				if (err){
 					console.log('=== Unable to run script ===');

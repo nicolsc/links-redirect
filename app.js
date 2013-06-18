@@ -2,8 +2,19 @@ var express = require('express'),
 	mongodb = require('mongodb'),
 	bcrypt = require('bcrypt'),
 	app = express(),
-	port = process.env.PORT || 17009;
+	port = process.env.PORT || 17009,
+	mongodb_conf =  (process.env.MONGOHQ_URL || 'mongodb://localhost:27017/links').replace(/^mongodb:\/\//gi, '').split('/');
 
+
+
+
+if (typeof process.env['MONGOHQ_URL'] != 'undefined') config['MONGODB'] = process.env['MONGOHQ_URL'];
+
+/* if we have a router (like on heroku) or nginx between the client and node, the port on which we access
+ the app might be different than the port on which node listen's (ex: on heroku, the client is on port 80),
+ but node listens on a random port above 40000. If nothing is present in the config, we assume the client
+ accesses node directly */
+config.HOSTPORT = config.HOST+((parseInt(config.HOST_PORT,10)!=80)?":"+config.HOST_PORT:"");
 
 var checkAdmin = function(req, res, next){
   if (!req.session || !req.session.user){
@@ -12,8 +23,10 @@ var checkAdmin = function(req, res, next){
   next();
 };
 
+console.log('process.env', process.env);
+console.log('mongodb conf', mongodb_conf);
 /* mongo init */
-var db = new mongodb.Db('links',new mongodb.Server('localhost', 27017), {w:-1});
+var db = new mongodb.Db(mongodb_conf[2],new mongodb.Server(mongodb_conf[0], mongodb_conf[1]), {w:-1});
 
 db.open(function(err, linksDb) {
 	app.use(express.bodyParser());
